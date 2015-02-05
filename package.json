@@ -4,7 +4,8 @@
   "description": "A node utility for Creating SailsJS Models and Sails Controllers from command line.",
   "main": "csmsc.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node csmsc.js",
   },
   "repository": {
     "url": "https://github.com/wandertosee/csmsc"
