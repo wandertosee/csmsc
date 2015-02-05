@@ -1,25 +1,3 @@
-/*
-	AUTO GENERATE MODEL AND CONTROLLER FOR SAILS API
-	-n is the name of the model and controller.
-	-f is a list of comma separated fields
-		the first field is considered the primary field
-		
-		/$modelName/get/ is called
-
-			mongodb's auto generated id will be used as the key
-			primaryFild will be the value for that key
-			{
-				_id:value,
-				primaryField:value
-			}
-
-		/$modelName/model/ is called
-
-			returns model definition
-			
-	CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
-	node cSmSc -n what -f oneF,twoF,threFe 
-*/
 fs = require('fs');
 
 function writeFile(fileName, contents) {
@@ -31,9 +9,11 @@ function writeFile(fileName, contents) {
 
 var name;
 var fields = false;
-var api = "api";
+var api = "./api";
 var modelFolder = api + "/models";
 var controllerFolder = api + "/controllers";
+
+console.log("Creating Sails Model and Controller");
 
 function mkDir(dir) {
 	if(!fs.existsSync(dir)){

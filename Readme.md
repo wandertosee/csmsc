@@ -46,3 +46,26 @@ csmsc will add the following
 
 createdBy and updatedBy values must be passed to the api or will default to 'admin'
 
+
+### Additional Notes
+
+	AUTO GENERATE MODEL AND CONTROLLER FOR SAILS API
+	-n is the name of the model and controller.
+	-f is a list of comma separated fields
+		the first field is considered the primary field
+		
+		/$modelName/get/ is called
+
+			mongodb's auto generated id will be used as the key
+			primaryFild will be the value for that key
+			{
+				_id:value,
+				primaryField:value
+			}
+
+		/$modelName/model/ is called
+
+			returns model definition
+			
+	CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
+	csmsc -n what -f one,two,three 
