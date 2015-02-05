@@ -1,14 +1,17 @@
 {
   "name": "csmsc",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "A node utility for Creating SailsJS Models and Sails Controllers from command line.",
   "main": "csmsc.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node csmsc.js",
+    "start": "node csmsc.js"
   },
   "repository": {
     "url": "https://github.com/wandertosee/csmsc"
+  },
+  "bin": {
+    "module-name": "./csmsc"
   },
   "keywords": [
     "SailsJS",
