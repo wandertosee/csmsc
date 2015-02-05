@@ -68,4 +68,5 @@ createdBy and updatedBy values must be passed to the api or will default to 'adm
 			returns model definition
 			
 	CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
-	csmsc -n what -f one,two,three 
+
+	csmsc -n NewModel -f one,two,three 
