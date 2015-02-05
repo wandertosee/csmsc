@@ -1,4 +1,6 @@
-fs = require('fs');
+#!/usr/bin/env node
+
+var fs = require('fs');
 
 function writeFile(fileName, contents) {
 	fs.writeFile(fileName, contents, function (err) {
