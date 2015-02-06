@@ -69,7 +69,7 @@ function createFieldDefinition (field) {
 
 	var addDefault = "";
 		if (field === 'createdBy' || field === 'updatedBy') {
-			addDefault = "default: 'admin',\r\t\t\t\t";
+			//addDefault = "default: 'admin'\r\t\t\t\t";
 		} else {
 			addDefault = "";
 		}

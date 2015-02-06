@@ -1,6 +1,6 @@
 {
   "name": "csmsc",
-  "version": "0.1.16",
+  "version": "0.1.18",
   "description": "A node utility for Creating SailsJS Models and Sails Controllers from command line.",
   "main": "csmsc.js",
   "scripts": {
