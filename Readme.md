@@ -57,26 +57,28 @@ createdBy and updatedBy values must be passed to the api or will default to 'adm
 			
 ####CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
 
-	csmsc -n NewModel -f one,two,three 
+```bash
+csmsc -n NewModel -f one,two,three 
+```
 
 ####MODEL - RETURNS MODEL DEFINITION
 
-	http://localhost:1337/newmodel/model/
+http://localhost:1337/newmodel/model/
 
 ####DISPLAYORDER - FOR ORDERD DYNAMIC VIEW PRESENTATION
 
-	http://localhost:1337/newmodel/displayOrder/
+http://localhost:1337/newmodel/displayOrder/
 
 ####GET - RETURN ID AND PRIMARY FIELDS FOR DROPDOWNS / CREATING RELATIONSHIPS
 
-	http://localhost:1337/newmodel/get/
+http://localhost:1337/newmodel/get/
 
 	mongodb's auto generated id will be used as the key
 	primaryFild will be the value for that key
 
 ####SEARCH - PRIMARY PROPERTY OR SPECIFIED FIELD
 
-	http://localhost:1337/newmodel/search/la?field=ObjectName
+http://localhost:1337/newmodel/search/la?field=ObjectName
 
 	Search string follows the slash
 
