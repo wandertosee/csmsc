@@ -142,9 +142,9 @@ function createController(controller, fields) {
 	"        var criteria = req.params.id || \"\";\r" + 
 	"        var query = {};\r" + 
 	"            searchField = req.query.field;\r" + 
-	"            skip = req.query.skip || skip;\r" + 
-	"            limit = req.query.limit || limit;\r" + 
-	"            sort = req.query.sort + \" \" + req.query.dir || sort + \" \" + dir;\r" + 
+	"            //skip = req.query.skip || skip;\r" + 
+	"            //limit = req.query.limit || limit;\r" + 
+	"            //sort = req.query.sort + \" \" + req.query.dir || sort + \" \" + dir;\r" + 
 	"\r" + 
 	"        if (criteria && searchField) {\r" + 
 	"            // CREATE QUERY OBJECT\r" + 
@@ -157,9 +157,9 @@ function createController(controller, fields) {
 	"        // MODEL REFERENCE\r" + 
 	"        "+ controller + ".find()\r" + 
 	"        .where(query)\r" + 
-	"        .skip(skip)\r" + 
-	"        .limit(limit)\r" + 
-	"        .sort(sort)\r" + 
+	"        //.skip(skip)\r" + 
+	"        //.limit(limit)\r" + 
+	"        //.sort(sort)\r" + 
 	"\r" + 
 	"            .exec(function findCB(err,found){\r" + 
 	"                while (found.length) {\r" + 
@@ -193,7 +193,7 @@ function createController(controller, fields) {
 	"    },\r" + 
 	"\r" + 
 	"    displayOrder: function(req, res) {\r" + 
-	"        return res(fields);\r" + 
+	"        return res.json(fields);\r" + 
 	"    }\r" +  
 	"};"
 }
