@@ -55,22 +55,26 @@ createdBy and updatedBy values must be passed to the api or will default to 'adm
 
 		the first field in the field list is considered the primary field.
 			
-	##CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
+	CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
 
 		csmsc -n NewModel -f one,two,three 
 
-	##RETURN MODEL DEFINITION
+	MODEL - RETURNS MODEL DEFINITION
 
 		http://localhost:1337/newmodel/model/
 
-	##GET ID AND PRIMARY FIELDS FOR DROPDOWNS / CREATING RELATIONSHIPS
+	DISPLAYORDER - FOR ORDERD DYNAMIC VIEW PRESENTATION
+
+		http://localhost:1337/newmodel/displayOrder/
+
+	GET - RETURN ID AND PRIMARY FIELDS FOR DROPDOWNS / CREATING RELATIONSHIPS
 
 		http://localhost:1337/newmodel/get/
 
 		mongodb's auto generated id will be used as the key
 		primaryFild will be the value for that key
 
-	##SEARCH
+	SEARCH - PRIMARY PROPERTY OR SPECIFIED FIELD
 
 		http://localhost:1337/newmodel/search/la?field=ObjectName
 
@@ -82,6 +86,6 @@ createdBy and updatedBy values must be passed to the api or will default to 'adm
 
 		Using a search string with a field name specified will search the specified field / node for the string provided.
 
-	#LIMIT, SKIP AND SORT 
+	LIMIT, SKIP AND SORT 
 
 		Implementation is not complete, these are placeholders.
