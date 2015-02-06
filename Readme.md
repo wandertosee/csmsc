@@ -49,33 +49,33 @@ createdBy and updatedBy values must be passed to the api or will default to 'adm
 
 ### Additional Notes
 
-####AUTO GENERATE MODEL AND CONTROLLER FOR SAILS API
+#### GENERATE model and Sails controller for SailsJS api
 	
 	-n is the name of the model and controller.
 	-f is a list of comma separated fields
 
 the first field in the field list is considered the primary field.
 		
-####CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
+#### CREATE Sails model and Sails controller EXAMPLE FROM COMMAND LINE
 
 	csmsc -n NewModel -f one,two,three 
 
-####MODEL - RETURNS MODEL DEFINITION
+#### MODEL - Returns model definition for frontend Validation Error Checking
 
 	http://localhost:1337/newmodel/model/
 
-####DISPLAYORDER - FOR ORDERD DYNAMIC VIEW PRESENTATION
+#### DISPLAYORDER - Returns list of fields for ordered Dynamic view presentation
 
 	http://localhost:1337/newmodel/displayOrder/
 
-####GET - RETURN ID AND PRIMARY FIELDS FOR DROPDOWNS / CREATING RELATIONSHIPS
+#### GET - Returns ID AND PRIMARY fields for dropdowns / suggestive lists
 
 	http://localhost:1337/newmodel/get/
 
 mongodb's auto generated id will be used as the key
 primaryFild will be the value for that key
 
-####SEARCH - PRIMARY PROPERTY OR SPECIFIED FIELD
+#### SEARCH - Returns results after searching primary or specified field for string
 
 	http://localhost:1337/newmodel/search/la?field=ObjectName
 
@@ -87,6 +87,6 @@ Using a search string without a field name will search the primary field / node 
 
 Using a search string with a field name specified will search the specified field / node for the string provided.
 
-#####LIMIT, SKIP AND SORT 
+#### LIMIT, SKIP AND SORT 
 
 Implementation is not complete, these are placeholders.
