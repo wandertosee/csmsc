@@ -50,44 +50,43 @@ createdBy and updatedBy values must be passed to the api or will default to 'adm
 ### Additional Notes
 
 ####AUTO GENERATE MODEL AND CONTROLLER FOR SAILS API
+	
 	-n is the name of the model and controller.
 	-f is a list of comma separated fields
 
-		the first field in the field list is considered the primary field.
-			
+the first field in the field list is considered the primary field.
+		
 ####CREATING Sails MODEL AND Sails CONTROLLER EXAMPLE FROM COMMAND LINE
 
-```bash
-csmsc -n NewModel -f one,two,three 
-```
+	csmsc -n NewModel -f one,two,three 
 
 ####MODEL - RETURNS MODEL DEFINITION
 
-http://localhost:1337/newmodel/model/
+	http://localhost:1337/newmodel/model/
 
 ####DISPLAYORDER - FOR ORDERD DYNAMIC VIEW PRESENTATION
 
-http://localhost:1337/newmodel/displayOrder/
+	http://localhost:1337/newmodel/displayOrder/
 
 ####GET - RETURN ID AND PRIMARY FIELDS FOR DROPDOWNS / CREATING RELATIONSHIPS
 
-http://localhost:1337/newmodel/get/
+	http://localhost:1337/newmodel/get/
 
-	mongodb's auto generated id will be used as the key
-	primaryFild will be the value for that key
+mongodb's auto generated id will be used as the key
+primaryFild will be the value for that key
 
 ####SEARCH - PRIMARY PROPERTY OR SPECIFIED FIELD
 
-http://localhost:1337/newmodel/search/la?field=ObjectName
+	http://localhost:1337/newmodel/search/la?field=ObjectName
 
-	Search string follows the slash
+Search string follows the slash
 
-	Field string is optional and follows ?field=
+Field string is optional and follows ?field=
 
-	Using a search string without a field name will search the primary field / node of the object.
+Using a search string without a field name will search the primary field / node of the object.
 
-	Using a search string with a field name specified will search the specified field / node for the string provided.
+Using a search string with a field name specified will search the specified field / node for the string provided.
 
 #####LIMIT, SKIP AND SORT 
 
-	Implementation is not complete, these are placeholders.
+Implementation is not complete, these are placeholders.
