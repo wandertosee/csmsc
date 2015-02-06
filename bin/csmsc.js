@@ -91,35 +91,19 @@ function createModel(controller, fields) {
 		output.push(createFieldDefinition(array[i]));
 	};
 
-	var contents = "\r"+
-	"/**\r"+
-	"* "+controller+".js\r"+
-	"*\r"+
-	"* @description :: Write something nice. Maybe send a card.\r"+
-	"*/\r"+
-	"/*\r"+
-	"field: {\r"+
-	"	type: 'string',\r"+
-	"	required: true,\r"+
-	"	unique: true\r"+
-	"},\r"+
+	var contents = "/*"+
+	"* "+controller+".js"+
+	"*"+
+	"* @description :: Write something nice. Maybe send a card."+
+	"*/"+
+
 	"\r"+
-	"relationshipOneToOne: {\r"+
-	"	model: 'modelName',\r"+
-	"	via: 'field'\r"+
-	"},\r"+
+	"module.exports = {\r\t"+
 	"\r"+
-	"relationshipOneToMany: {\r"+
-	"	collection: 'modelName',\r"+
-	"},\r"+
-	"*/\r"+
-	"\r"+
-	"	module.exports = {\r\t"+
-	"\r\t"+
-	"	  attributes: {\r\t"+
-	"	    " + output.join(',\r') + "\r\t"+
-	"	  }\r\t"+
-	"};\r\t";
+	"	attributes: {\r\t"+
+	"	" + output.join(',\r') + "\r\t"+
+	"	}\r\t"+
+	"};";
 	
 	return contents;
 }
@@ -138,7 +122,7 @@ function createController(controller, fields) {
 	"var limit = 30;\r" + 
 	"var sort = primaryField;\r" + 
 	"var dir = \"desc\";\r" + 
-	"var fields = '"+ fields.split(',').join('\',\'') + "';\r" + 
+	"var fields = ['"+ fields.split(',').join('\',\'') + "'];\r" + 
 	"\r" + 
 	"var performSearch = function(req, res) {\r" + 
 	"        var output = [];\r" + 
