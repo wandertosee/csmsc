@@ -87,6 +87,16 @@ Using a search string without a field name will search the primary field / node 
 
 Using a search string with a field name specified will search the specified field / node for the string provided.
 
-#### LIMIT, SKIP AND SORT 
+#### LIMIT, SKIP
 
-Implementation is not complete, these are placeholders.
+	Limit
+
+		&limit=
+
+	Skip
+
+		&skip= 
+
+#### SORT
+
+Implementation is not complete, this is a placeholder.

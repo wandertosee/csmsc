@@ -141,11 +141,11 @@ function createController(controller, fields) {
 	"        var output = [];\r" + 
 	"        var criteria = req.params.id || \"\";\r" + 
 	"        var query = {};\r" + 
-	"            searchField = req.query.field;\r" + 
-	"            //skip = req.query.skip || skip;\r" + 
-	"            //limit = req.query.limit || limit;\r" + 
-	"            //sort = req.query.sort + \" \" + req.query.dir || sort + \" \" + dir;\r" + 
-	"\r" + 
+	"            searchField = req.query.field || primaryField;\r" + 
+	"            skip = req.query.skip || skip;\r" + 
+	"            limit = req.query.limit || limit;\r" + 
+	"            //sort = (req.query.sort) ? \"{\" + req.query.sort + \": '\" + req.query.dir + \"'}\" : \"{\" + primaryField + \": '\" + dir + \"'}\";\r" + 
+	"\r" +
 	"        if (criteria && searchField) {\r" + 
 	"            // CREATE QUERY OBJECT\r" + 
 	"            query = {}; \r" + 
@@ -157,8 +157,8 @@ function createController(controller, fields) {
 	"        // MODEL REFERENCE\r" + 
 	"        "+ controller + ".find()\r" + 
 	"        .where(query)\r" + 
-	"        //.skip(skip)\r" + 
-	"        //.limit(limit)\r" + 
+	"        .skip(skip)\r" + 
+	"        .limit(limit)\r" + 
 	"        //.sort(sort)\r" + 
 	"\r" + 
 	"            .exec(function findCB(err,found){\r" + 
