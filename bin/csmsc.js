@@ -2,6 +2,17 @@
 
 var fs = require('fs');
 
+var outputFormat = "\r\t\t\t";
+
+var name;
+var fields = false;
+var models = false;
+var collections = false;
+var api = "./api";
+var modelFolder = api + "/models";
+var controllerFolder = api + "/controllers";
+
+
 function writeFile(fileName, contents) {
 	fs.writeFile(fileName, contents, function (err) {
 	  if (err) return console.log(err);
@@ -9,15 +20,13 @@ function writeFile(fileName, contents) {
 	});
 }
 
-var name;
-var fields = false;
-var api = "./api";
-var modelFolder = api + "/models";
-var controllerFolder = api + "/controllers";
+console.log();
+console.log();
 
 console.log("Creating Sails Model and Controller");
 
 function mkDir(dir) {
+
 	if(!fs.existsSync(dir)){
 		fs.mkdirSync(dir, 0766, function(err){
 			if(err){ 
@@ -30,33 +39,56 @@ function mkDir(dir) {
 
 process.argv.forEach(function (val, index, array) {
 	if (val.indexOf("-n") === 0) {
-		 name = array[index+1];
+		name = array[index+1];
 	}
 	if (val.indexOf("-f") === 0) {
-		 fields = array[index+1];
+		fields = array[index+1];
+	}
+	if (val.indexOf("-m") === 0) {
+		models = array[index+1];
+	}
+	if (val.indexOf("-c") === 0) {
+		collections = array[index+1];
 	}
 });
+console.log();
+console.log();
+
+if (!fields) {
+	console.log("Please add -f with fields in a comma separated list before running.");
+	return;
+}
 
 if (!name) {
 	console.log("Please add -n with ModelName before running.");
 	return;
 }
 
-if (!fields) {
-	console.log("Please add -f with field names before running.");
-	return;
+if (models) {
+	console.log("Models are one to one relationships. Creating " + models);
 }
 
+if (collections) {
+	console.log("Collections are one to many relationships. Creating " + collections);
+	console.log();
+	console.log("===================================");
+	console.log("****** NOTICE - PLEASE READ *******");
+	console.log("===================================");
+	console.log();
+	console.log("BEFORE running sails lift");
+	console.log();
+	console.log("Open and modify the value for the via property for each associated collection in " + name + "Controller.js.");
+	console.log();
+}
 
 mkDir(api);
 mkDir(modelFolder);
 mkDir(controllerFolder);
 
-
-fields+=",createdBy,updatedBy" ;
+fields+=",createdBy,updatedBy";
 
 // CREATE MODEL.js
-var model = createModel(name, fields);
+var model = createModel(name, fields, models, collections);
 var modelName = name+".js";
 writeFile(modelFolder + "/" + modelName, model);
 
@@ -65,29 +97,64 @@ var controller = createController(name, fields);
 var controllerName = name+"Controller.js";
 writeFile(controllerFolder + "/" + controllerName, controller);
 
-function createFieldDefinition (field) {
+// USED TO RETURN RELATED TABLE DATA
+// SQL PEEPS CONSIDER THIS AS A JOIN
+// SOLVED BY SAILSJS adding populateAll()
+var populateOutput;
+
+function createFieldDefinition(field) {
 
 	var addDefault = "";
 		if (field === 'createdBy' || field === 'updatedBy') {
-			addDefault = "default: 'admin',\r\t\t\t\t";
+			addDefault = "default: 'admin'," + outputFormat + "\t";
 		} else {
 			addDefault = "";
 		}
-	    return " \r\t\t\t"+
-	    field + ": { \r\t\t\t\t"+
+	return " " + outputFormat +
+	    field + ": { " + outputFormat + "\t"+
         addDefault+
-        "type: 'string'\r\t\t\t\t"+
+        "type: 'string'" + outputFormat +
   		"}";
-
 }
 
-function createModel(controller, fields) {
-
-	var array = fields.split(",");
+function createPropertiesArray(items, fnct) {
 	var output = [];
-	for (var i = 0; i < array.length; i++) {
-		output.push(createFieldDefinition(array[i]));
-	};
+	if (items) {
+		var array = items.split(",");
+		for (var i = 0; i < array.length; i++) {
+			output.push(fnct(array[i]));
+		};
+	}
+	return output;
+}
+
+function createCollectionsDefinition(collection) {
+    return " " + outputFormat +
+	"related" + collection + ": { " + outputFormat +
+	"	collection: '" + collection + "'," + outputFormat +
+	"	//via: '" + collection.toLowerCase() + "'" + outputFormat +
+	"},\r";
+}
+
+function createModelsDefinition(model) {
+    return " " + outputFormat +
+	"related" + model + ": { " + outputFormat +
+	"	model: '" + model + "'," + outputFormat +
+	"	via: '" + model.toLowerCase() + "'" + outputFormat +
+	"},\r";
+}
+
+// SOLVED BY SAILSJS adding populateAll()
+//function createPopulateQuery(model) {
+//	return ".populate('" + model + "')" + outputFormat;
+//}
+
+function createModel(controller, fields, collections, models) {
+	var collectionsOutput = createPropertiesArray(collections, createCollectionsDefinition);
+	var modelsOutput = createPropertiesArray(models, createModelsDefinition);
+	var fieldsOutput = createPropertiesArray(fields, createFieldDefinition);
+		//populateOutput = createPropertiesArray(collections, createPopulateQuery);
+		//populateOutput += createPropertiesArray(models, createPopulateQuery)
 
 	var contents = "/**\r"+
 	"* "+controller+".js\r"+
@@ -100,21 +167,14 @@ function createModel(controller, fields) {
 	"	required: true,\r"+
 	"	unique: true\r"+
 	"},\r"+
-	"\r"+
-	"relationshipOneToOne: {\r"+
-	"	model: 'modelName',\r"+
-	"	via: 'field'\r"+
-	"},\r"+
-	"\r"+
-	"relationshipOneToMany: {\r"+
-	"	collection: 'modelName',\r"+
-	"},\r"+
 	"*/\r"+
 	"\r"+
 	"	module.exports = {\r\t"+
 	"\r\t"+
 	"	  attributes: {\r\t"+
-	"	    " + output.join(',\r') + "\r\t"+
+	"	    " + collectionsOutput.join(',\r') + "\r\t"+
+	"	    " + modelsOutput.join(',\r') + "\r\t"+
+	"	    " + fieldsOutput.join(',\r') + "\r\t"+
 	"	  }\r\t"+
 	"};\r\t";
 	
@@ -129,8 +189,9 @@ function createController(controller, fields) {
 	" */\r" + 
 	"\r" + 
 	"// MODEL PROPERTY REFERENCE\r" + 
+	"\r" + 
 	"var primaryField = '" + fields.split(',')[0] + "';\r" + 
-	"var searchField = \"\";\r" + 
+	"var searchField;\r" + 
 	"var skip = 0;\r" + 
 	"var limit = 30;\r" + 
 	"var sort = primaryField;\r" + 
@@ -141,7 +202,7 @@ function createController(controller, fields) {
 	"        var output = [];\r" + 
 	"        var criteria = req.params.id || \"\";\r" + 
 	"        var query = {};\r" + 
-	"            searchField = req.query.field || primaryField;\r" + 
+	"            searchField = req.query.field;\r" + 
 	"            skip = req.query.skip || skip;\r" + 
 	"            limit = req.query.limit || limit;\r" + 
 	"            //sort = (req.query.sort) ? \"{\" + req.query.sort + \": '\" + req.query.dir + \"'}\" : \"{\" + primaryField + \": '\" + dir + \"'}\";\r" + 
@@ -157,6 +218,11 @@ function createController(controller, fields) {
 	"        // MODEL REFERENCE\r" + 
 	"        "+ controller + ".find()\r" + 
 	"        .where(query)\r" + 
+	"\r" +
+	"		 // COMMENT populateAll OUT IF NOT NEEDED\r" +
+	"		 // THIS GRABS ASSOCATED MODEL AND COLLECTION DATA\r" +
+	"		 .populateAll()\r" +
+	"\r" +
 	"        .skip(skip)\r" + 
 	"        .limit(limit)\r" + 
 	"        //.sort(sort)\r" + 

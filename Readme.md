@@ -53,6 +53,8 @@ createdBy and updatedBy values must be passed to the api or will default to 'adm
 	
 	-n is the name of the model and controller.
 	-f is a list of comma separated fields
+	-c is a list of comma separated collections (one to many)
+	-m is a list of comma separated models (one to one)
 
 the first field in the field list is considered the primary field.
 		
