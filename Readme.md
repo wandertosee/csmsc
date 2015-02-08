@@ -19,7 +19,11 @@ To use it, `cd` into a project directory, and run `csmsc` with -n and -f args to
 Make a model and controller for 'modelName' with properties 'primaryproperty', 'anotherproperty' and 'aThirdproperty':
 
 ```bash
-csmsc -n ModelName -f 'primaryproperty','anotherproperty','aThirdproperty'
+csmsc -n ModelName -f firstprop,secondprop,thirdprop
+```
+
+```bash
+csmsc.js -n ModelName -f title,url,subtitle,text,author -c tags -m company
 ```
 
 ### Notes
