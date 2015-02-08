@@ -23,7 +23,7 @@ csmsc -n ModelName -f firstprop,secondprop,thirdprop
 ```
 
 ```bash
-csmsc.js -n ModelName -f title,url,subtitle,text,author -c tags -m company
+csmsc -n ModelName -f title,url,subtitle,text,author -c tags -m company
 ```
 
 ### Notes
