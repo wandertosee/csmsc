@@ -128,33 +128,33 @@ function createPropertiesArray(items, fnct) {
 	return output;
 }
 
-function createCollectionsDefinition(collection) {
+function createDefinition(type, collection) {
     return " " + outputFormat +
 	"related" + collection + ": { " + outputFormat +
-	"	collection: '" + collection + "'," + outputFormat +
+	"	" + type + ": '" + collection + "'," + outputFormat +
 	"	//via: '" + collection.toLowerCase() + "'" + outputFormat +
 	"},\r";
 }
 
+function createCollectionsDefinition(collection) {
+    return createDefinition("collection", collection);
+}
+
 function createModelsDefinition(model) {
-    return " " + outputFormat +
-	"related" + model + ": { " + outputFormat +
-	"	model: '" + model + "'," + outputFormat +
-	"	via: '" + model.toLowerCase() + "'" + outputFormat +
-	"},\r";
+    return createDefinition("model", model);
 }
 
 // SOLVED BY SAILSJS adding populateAll()
-//function createPopulateQuery(model) {
-//	return ".populate('" + model + "')" + outputFormat;
-//}
+function createPopulateQuery(model) {
+	return "//.populate('" + model + "')" + outputFormat;
+}
 
 function createModel(controller, fields, collections, models) {
 	var collectionsOutput = createPropertiesArray(collections, createCollectionsDefinition);
 	var modelsOutput = createPropertiesArray(models, createModelsDefinition);
 	var fieldsOutput = createPropertiesArray(fields, createFieldDefinition);
-		//populateOutput = createPropertiesArray(collections, createPopulateQuery);
-		//populateOutput += createPropertiesArray(models, createPopulateQuery)
+		populateOutput = createPropertiesArray(collections, createPopulateQuery);
+		populateOutput += createPropertiesArray(models, createPopulateQuery)
 
 	var contents = "/**\r"+
 	"* "+controller+".js\r"+
@@ -196,7 +196,6 @@ function createController(controller, fields) {
 	"var limit = 30;\r" + 
 	"var sort = primaryField;\r" + 
 	"var dir = \"desc\";\r" + 
-	"var fields = ['"+ fields.split(',').join('\',\'') + "'];\r" + 
 	"\r" + 
 	"var performSearch = function(req, res) {\r" + 
 	"        var output = [];\r" + 
@@ -221,6 +220,9 @@ function createController(controller, fields) {
 	"\r" +
 	"		 // COMMENT populateAll OUT IF NOT NEEDED\r" +
 	"		 // THIS GRABS ASSOCATED MODEL AND COLLECTION DATA\r" +
+	"		 // use .populate('relatedModelName') for each relatedModel\r" + 
+	"		 // if specific joins are required\r" +
+	"		 " + populateOutput + "\r" +
 	"		 .populateAll()\r" +
 	"\r" +
 	"        .skip(skip)\r" + 
@@ -245,21 +247,25 @@ function createController(controller, fields) {
 	"\r" + 
 	"module.exports = {\r" + 
 	"\r" + 
-	"    get: function (req, res) {\r" + 
-	"        return performSearch(req, res);\r" + 
-	"    },\r" + 
+	"	get: function (req, res) {\r" + 
+	"		return performSearch(req, res);\r" + 
+	"	},\r" + 
 	"\r" + 
-	"    search: function (req, res) {\r" + 
-	"        return performSearch(req, res);\r" + 
-	"    },\r" + 
+	"	search: function (req, res) {\r" + 
+	"		return performSearch(req, res);\r" + 
+	"	},\r" + 
 	"\r" + 
-	"    model: function(req, res) {\r" + 
-	"        // MODEL REFERENCE\r" + 
-	"        return res.json("+ controller + "._attributes);\r" + 
-	"    },\r" + 
+	"	model: function(req, res) {\r" + 
+	"		// MODEL REFERENCE\r" + 
+	"		return res.json("+ controller + "._attributes);\r" + 
+	"	},\r" + 
 	"\r" + 
-	"    displayOrder: function(req, res) {\r" + 
-	"        return res.json(fields);\r" + 
+	"	displayOrder: function(req, res) {\r" + 
+	"		var array = [];\r" + 
+	"		for (var prop in Newold._attributes) {\r" + 
+	"			array.push(prop);\r" + 
+	"		}\r" +  
+	"		return res.json(array);\r" + 
 	"    }\r" +  
 	"};"
 }
