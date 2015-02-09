@@ -205,17 +205,22 @@ function createController(controller, fields) {
 	"var searchField;\r" + 
 	"var skip = 0;\r" + 
 	"var limit = 30;\r" + 
-	"var sort = primaryField;\r" + 
-	"var dir = \"desc\";\r" + 
 	"\r" + 
 	"var performSearch = function(req, res, type) {\r" + 
 	"        var output = [];\r" + 
 	"        var criteria = req.params.id || \"\";\r" + 
+	"        var sort = {};\r" +
+	"        var dir = 'asc';\r" +
 	"        var query = {};\r" + 
 	"            searchField = req.query.field;\r" + 
 	"            skip = req.query.skip || skip;\r" + 
 	"            limit = req.query.limit || limit;\r" + 
-	"            //sort = (req.query.sort) ? \"{\" + req.query.sort + \": '\" + req.query.dir + \"'}\" : \"{\" + primaryField + \": '\" + dir + \"'}\";\r" + 
+	"            dir = req.query.dir || dir;\r" +
+	"            if (req.query.sort) {\r" +
+	"            	sort[req.query.sort] = dir;\r" +
+	"            } else {\r" +
+	"				sort[primaryField] = dir;\r" +
+	"            }\r" +
 	"\r" +
 	"        if (criteria && searchField) {\r" + 
 	"            // CREATE QUERY OBJECT\r" + 
@@ -238,7 +243,7 @@ function createController(controller, fields) {
 	"\r" +
 	"        .skip(skip)\r" + 
 	"        .limit(limit)\r" + 
-	"        //.sort(sort)\r" + 
+	"        .sort(sort)\r" + 
 	"\r" + 
 	"            .exec(function findCB(err,found){\r" + 
 	"                while (found.length) {\r" + 
