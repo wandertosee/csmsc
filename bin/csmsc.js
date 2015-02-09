@@ -11,13 +11,17 @@ var collections = false;
 var api = "./api";
 var modelFolder = api + "/models";
 var controllerFolder = api + "/controllers";
-
+var firstField = true;
 
 function writeFile(fileName, contents) {
 	fs.writeFile(fileName, contents, function (err) {
 	  if (err) return console.log(err);
 	  console.log('File:' + fileName + ' written');
 	});
+}
+
+function camelCase (str) {
+	return str.charAt(0).toLowerCase() + str.slice(1);;
 }
 
 console.log();
@@ -85,7 +89,7 @@ mkDir(api);
 mkDir(modelFolder);
 mkDir(controllerFolder);
 
-fields+=",createdBy,updatedBy";
+var recordKeepingFields ="createdBy,updatedBy";
 
 // CREATE MODEL.js
 var model = createModel(name, fields, models, collections);
@@ -106,12 +110,15 @@ function createFieldDefinition(field) {
 
 	var addDefault = "";
 		if (field === 'createdBy' || field === 'updatedBy') {
-			addDefault = "default: 'admin'," + outputFormat + "\t";
+			addDefault = "defaultsTo: 'admin'," + outputFormat + "\t";
 		} else {
 			addDefault = "";
 		}
+	var addUniqueRequired = (firstField) ? "required: true," + outputFormat + "\tunique: true," + outputFormat + "\t" : ""; 
+	firstField = false;
 	return " " + outputFormat +
 	    field + ": { " + outputFormat + "\t"+
+	    addUniqueRequired + 
         addDefault+
         "type: 'string'" + outputFormat +
   		"}";
@@ -129,10 +136,12 @@ function createPropertiesArray(items, fnct) {
 }
 
 function createDefinition(type, collection) {
+	var related = (type === "collection") ? "related" : "";
+	var via = (type === "model") ? "	via: '" : "	//via: '";
     return " " + outputFormat +
-	"related" + collection + ": { " + outputFormat +
-	"	" + type + ": '" + collection + "'," + outputFormat +
-	"	//via: '" + collection.toLowerCase() + "'" + outputFormat +
+	related + collection + ": { " + outputFormat +
+	"	" + type + ": '" + collection.toLowerCase() + "'," + outputFormat +
+	via + camelCase(collection) + "'" + outputFormat +
 	"},\r";
 }
 
@@ -149,10 +158,11 @@ function createPopulateQuery(model) {
 	return "//.populate('" + model + "')" + outputFormat;
 }
 
-function createModel(controller, fields, collections, models) {
+function createModel(controller, fields, models, collections) {
 	var collectionsOutput = createPropertiesArray(collections, createCollectionsDefinition);
 	var modelsOutput = createPropertiesArray(models, createModelsDefinition);
 	var fieldsOutput = createPropertiesArray(fields, createFieldDefinition);
+	var recordKeepingOutput = createPropertiesArray(recordKeepingFields, createFieldDefinition);
 		populateOutput = createPropertiesArray(collections, createPopulateQuery);
 		populateOutput += createPropertiesArray(models, createPopulateQuery)
 
@@ -172,9 +182,10 @@ function createModel(controller, fields, collections, models) {
 	"	module.exports = {\r\t"+
 	"\r\t"+
 	"	  attributes: {\r\t"+
+	"	    " + fieldsOutput.join(',\r') + ",\r\t"+
 	"	    " + collectionsOutput.join(',\r') + "\r\t"+
 	"	    " + modelsOutput.join(',\r') + "\r\t"+
-	"	    " + fieldsOutput.join(',\r') + "\r\t"+
+	"	    " + recordKeepingOutput.join(',\r') + "\r\t"+
 	"	  }\r\t"+
 	"};\r\t";
 	
@@ -197,7 +208,7 @@ function createController(controller, fields) {
 	"var sort = primaryField;\r" + 
 	"var dir = \"desc\";\r" + 
 	"\r" + 
-	"var performSearch = function(req, res) {\r" + 
+	"var performSearch = function(req, res, type) {\r" + 
 	"        var output = [];\r" + 
 	"        var criteria = req.params.id || \"\";\r" + 
 	"        var query = {};\r" + 
@@ -232,7 +243,7 @@ function createController(controller, fields) {
 	"            .exec(function findCB(err,found){\r" + 
 	"                while (found.length) {\r" + 
 	"                    var tmp = found.pop();\r" + 
-	"                    if (searchField) {      // RETURN FULL OBJECT FOR GENERAL SEARCH\r" + 
+	"                    if (type === 'search') {      // RETURN FULL OBJECT FOR GENERAL SEARCH\r" + 
 	"                        output.push(tmp);\r" + 
 	"                    } else {                // RETURN PRIMARY FIELD AND ID\r" + 
 	"                        var tmpObj = {}\r" + 
@@ -248,11 +259,11 @@ function createController(controller, fields) {
 	"module.exports = {\r" + 
 	"\r" + 
 	"	get: function (req, res) {\r" + 
-	"		return performSearch(req, res);\r" + 
+	"		return performSearch(req, res, 'get');\r" + 
 	"	},\r" + 
 	"\r" + 
 	"	search: function (req, res) {\r" + 
-	"		return performSearch(req, res);\r" + 
+	"		return performSearch(req, res, 'search');\r" + 
 	"	},\r" + 
 	"\r" + 
 	"	model: function(req, res) {\r" + 
