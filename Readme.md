@@ -1,6 +1,6 @@
 # csmsc
 
-This is a node.js command line utility that creates SailsJS base Models and Controllers for API use.
+This package is being replaced by DSMC, please switch. This is a node.js command line utility that creates SailsJS base Models and Controllers for API use.
 
 ## Installation
 

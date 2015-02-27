@@ -78,6 +78,11 @@ if (collections) {
 	console.log("===================================");
 	console.log("****** NOTICE - PLEASE READ *******");
 	console.log("===================================");
+
+	console.log();
+	console.log();
+	console.log("This package is being replaced by DSMC, please switch.");
+	console.log();
 	console.log();
 	console.log("BEFORE running sails lift");
 	console.log();
@@ -136,7 +141,7 @@ function createPropertiesArray(items, fnct) {
 }
 
 function createDefinition(type, collection) {
-	var related = (type === "collection") ? "related" : "";
+	var related = (type === "collection") ? "" : "";
 	var via = (type === "model") ? "	via: '" : "	//via: '";
     return " " + outputFormat +
 	related + collection + ": { " + outputFormat +
@@ -176,6 +181,7 @@ function createModel(controller, fields, models, collections) {
 	"	type: 'string',\r"+
 	"	required: true,\r"+
 	"	unique: true\r"+
+	"	// supported field types: string, text, integer, float, date, time, datetime, boolean, binary, array, json\r" +
 	"},\r"+
 	"*/\r"+
 	"\r"+
@@ -183,7 +189,7 @@ function createModel(controller, fields, models, collections) {
 	"\r\t"+
 	"	  attributes: {\r\t"+
 	"	    " + fieldsOutput.join(',\r') + ",\r\t"+
-	"	    " + collectionsOutput.join(',\r') + "\r\t"+
+	"	    " + collectionsOutput.join('\r') + "\r\t"+
 	"	    " + modelsOutput.join(',\r') + "\r\t"+
 	"	    " + recordKeepingOutput.join(',\r') + "\r\t"+
 	"	  }\r\t"+
@@ -191,97 +197,258 @@ function createModel(controller, fields, models, collections) {
 	
 	return contents;
 }
+/*
+Model.native(function(err, collection){
+
+    // Handle Errors
+
+    collection.find({'query': 'here'}).done(function(error, docs) {
+
+        // Handle Errors
+
+        // Do mongo-y things to your docs here
+
+    });
+
+});
+*/
 
 function createController(controller, fields) {
-	return "/**\r" + 
-	" * "+ controller + "Controller\r" + 
-	" *\r" + 
-	" * @description :: Base API for "+ controller + "\r" + 
-	" */\r" + 
-	"\r" + 
-	"// MODEL PROPERTY REFERENCE\r" + 
-	"\r" + 
-	"var primaryField = '" + fields.split(',')[0] + "';\r" + 
-	"var searchField;\r" + 
-	"var skip = 0;\r" + 
-	"var limit = 30;\r" + 
-	"\r" + 
-	"var performSearch = function(req, res, type) {\r" + 
-	"        var output = [];\r" + 
-	"        var criteria = req.params.id || \"\";\r" + 
-	"        var sort = {};\r" +
-	"        var dir = 'asc';\r" +
-	"        var query = {};\r" + 
-	"            searchField = req.query.field;\r" + 
-	"            skip = req.query.skip || skip;\r" + 
-	"            limit = req.query.limit || limit;\r" + 
-	"            dir = req.query.dir || dir;\r" +
-	"            if (req.query.sort) {\r" +
-	"            	sort[req.query.sort] = dir;\r" +
+	return 		"/**\r" +
+	" * " + controller + "Controller\r" +
+	" *\r" +
+	" * @description :: Base API for "+ controller + "\r" +
+	" */\r" +
+	"\r" +
+	"// Search Defaults\r" +
+	"var defaults = {\r" +
+	"	skip: 0,\r" +
+	"	limit: 20,\r" +
+	"	dir: 'desc',\r" +
+	"	primaryField: '" + fields.split(',')[0] + "',\r" +
+	"	_textAreas: []\r" +
+	"}\r" +
+	"\r" +
+	"var methods = require('../../common/defaultController.js')(defaults);\r" +
+	"\r" +
+	"module.exports = methods;\r" +
+	"\r" +
+	"var setConfig = function(req) {\r" +
+	"    \r" +
+	"    // MODEL CONFIG\r" +
+	"    config.modelName = req.options.controller;\r" +
+	"    config.model = sails.models[config.modelName]._attributes;\r" +
+	"\r" +
+	"    // SEARCH CONFIG\r" +
+	"    var query = req.query;\r" +
+	"    var params = req.params;\r" +
+	"\r" +
+	"    config.searchField = query.field || primaryField;\r" +
+	"    config.criteria = decodeURIComponent(params.id) || undefined;\r" +
+	"    config.skip = parseInt(query.skip) || skip;\r" +
+	"    config.limit = parseInt(query.limit) || limit;\r" +
+	"    config.dir = query.dir || dir;\r" +
+	"    config.sort = {};\r" +
+	"    if (query.sort) {\r" +
+	"        config.sort[query.sort] = dir;\r" +
+	"    } else {\r" +
+	"        config.sort[primaryField] = dir;\r" +
+	"    }\r" +
+	"    config.query = {};\r" +
+	"    if (config.criteria !== undefined && config.criteria !== 'undefined') {\r" +
+	"        config.query[config.searchField] = {'contains':config.criteria};\r" +
+	"    }\r" +
+	"    \r" +
+	"    return config;\r" +
+	"}\r" +
+	"\r" +
+	"// PERFORM SEARCH ON PROPERTIES OF THIS MODEL\r" +
+	"var performSearch = function(res, config, type) {\r" +
+	"    var output = [];\r" +
+	"    // MODEL REFERENCE\r" +
+	"    sails.models[config.modelName].find()\r" +
+	"    .where(config.query)\r" +
+	"    .populateAll()\r" +
+	"    .skip(config.skip)\r" +
+	"    .limit(config.limit)\r" +
+	"    .sort(config.sort)\r" +
+	"\r" +
+	"    .exec(function findCB(err,found){\r" +
+	"        while (found.length) {\r" +
+	"            var tmp = found.pop();\r" +
+	"            // RETURN FULL OBJECT FOR SEARCH\r" +
+	"            if (type === 'search') {\r" +
+	"                output.push(tmp);\r" +
+	"            // RETURN SELECTED SEARCH FIELD AND ID FOR GET\r" +
 	"            } else {\r" +
-	"				sort[primaryField] = dir;\r" +
+	"                var tmpObj = {}\r" +
+	"                tmpObj[config.searchField] = tmp[config.searchField];\r" +
+	"                tmpObj.id = tmp.id;\r" +
+	"                output.push(tmpObj);\r" +
 	"            }\r" +
+	"        }\r" +
+	"       return res.json(output);\r" +
+	"    });\r" +
+	"}\r" +
 	"\r" +
-	"        if (criteria && searchField) {\r" + 
-	"            // CREATE QUERY OBJECT\r" + 
-	"            query = {}; \r" + 
-	"            // ADD PROPERTY TO AVOID LITERAL PROP DECLARATION\r" + 
-	"            query[searchField] = {\"contains\":criteria}; \r" + 
-	"        } else {\r" + 
-	"            query[primaryField] = {\"contains\":criteria};\r" + 
-	"        }\r" + 
-	"        // MODEL REFERENCE\r" + 
-	"        "+ controller + ".find()\r" + 
-	"        .where(query)\r" + 
+	"var searchRelatedModel = function(res, searchConfig, config) {\r" +
+	"     var whereQuery = {};\r" +
+	"    whereQuery[searchConfig.via] = { contains: config.criteria };\r" +
+	"    // RETURNED FROM INITIAL RELATED DATA QUERY\r" +
+	"    // THEN RESET AND RETURNED FROM JOIN TABLE\r" +
+	"    var foreignIdArray = []; \r" +
+	"    return sails.models[config.searchField].find()\r" +
+	"        .where(whereQuery)\r" +
+	"        .then(function(relatedDocs){\r" +
+	"            for (var i = relatedDocs.length - 1; i >= 0; i--) {\r" +
+	"                foreignIdArray.push(relatedDocs[i].id);\r" +
+	"            };\r" +
+	"            //no relatedDocs found\r" +
+	"            if(relatedDocs === undefined) {\r" +
+	"                return res.json({notFound:true});\r" +
+	"            }\r" +
+	"            var whereQuery = {};\r" +
+	"            whereQuery[config.searchField] = { '$in':foreignIdArray };\r" +
 	"\r" +
-	"		 // COMMENT populateAll OUT IF NOT NEEDED\r" +
-	"		 // THIS GRABS ASSOCATED MODEL AND COLLECTION DATA\r" +
-	"		 // use .populate('relatedModelName') for each relatedModel\r" + 
-	"		 // if specific joins are required\r" +
-	"		 " + populateOutput + "\r" +
-	"		 .populateAll()\r" +
+	"            // GET PRIMARY DATA using primaryIdArray\r" +
+	"            return sails.models[model].find()\r" +
+	"            .where(whereQuery)\r" +
+	"            .populateAll()\r" +
+	"            .then(function(found){\r" +
+	"                res.json(found);\r" +
+	"            });\r" +
+	"    });\r" +
+	"}\r" +
 	"\r" +
-	"        .skip(skip)\r" + 
-	"        .limit(limit)\r" + 
-	"        .sort(sort)\r" + 
-	"\r" + 
-	"            .exec(function findCB(err,found){\r" + 
-	"                while (found.length) {\r" + 
-	"                    var tmp = found.pop();\r" + 
-	"                    if (type === 'search') {      // RETURN FULL OBJECT FOR GENERAL SEARCH\r" + 
-	"                        output.push(tmp);\r" + 
-	"                    } else {                // RETURN PRIMARY FIELD AND ID\r" + 
-	"                        var tmpObj = {}\r" + 
-	"                        tmpObj[primaryField] = tmp[primaryField];\r" + 
-	"                        tmpObj.id = tmp.id;\r" + 
-	"                        output.push(tmpObj);\r" + 
-	"                    }\r" + 
-	"                }\r" + 
-	"            return res.json(output);\r" + 
-	"        });\r" + 
-	"}\r" + 
-	"\r" + 
-	"module.exports = {\r" + 
-	"\r" + 
-	"	get: function (req, res) {\r" + 
-	"		return performSearch(req, res, 'get');\r" + 
-	"	},\r" + 
-	"\r" + 
-	"	search: function (req, res) {\r" + 
-	"		return performSearch(req, res, 'search');\r" + 
-	"	},\r" + 
-	"\r" + 
-	"	model: function(req, res) {\r" + 
-	"		// MODEL REFERENCE\r" + 
-	"		return res.json("+ controller + "._attributes);\r" + 
-	"	},\r" + 
-	"\r" + 
-	"	displayOrder: function(req, res) {\r" + 
-	"		var array = [];\r" + 
-	"		for (var prop in Newold._attributes) {\r" + 
-	"			array.push(prop);\r" + 
-	"		}\r" +  
-	"		return res.json(array);\r" + 
-	"    }\r" +  
-	"};"
+	"module.exports = {\r" +
+	"\r" +
+	"    get: function (req, res) {\r" +
+	"        var config = setConfig(req);\r" +
+	"        return performSearch(res, config, 'get');           \r" +
+	"    },\r" +
+	"\r" +
+	"    search: function (req, res) {\r" +
+	"\r" +
+	"        // GET SEARCH CRITERIA\r" +
+	"        var config = setConfig(req);\r" +
+	"        var searchConfig = config.model[config.searchField];\r" +
+	"\r" +
+	"        // PERFORM SEARCH ON PROPERTIES OF THIS MODEL\r" +
+	"        if (!searchConfig.hasOwnProperty('via') && !searchConfig.hasOwnProperty('model') && !searchConfig.hasOwnProperty('collection') ) {\r" +
+	"            return performSearch(res, config, 'search');           \r" +
+	"        }\r" +
+	"        // ONE TO ONE RELATIONSHIP\r" +
+	"        // PERFORM SEARCH ON PROPERTIES OF EXTERNAL MODEL\r" +
+	"        if (searchConfig.hasOwnProperty('model')) {\r" +
+	"            return searchRelatedModel(res, searchConfig, config);\r" +
+	"        }\r" +
+	"\r" +
+	"        // ONE TO MANY RELATIONSHIP\r" +
+	"        // PERFORM SEARCH ON PROPERTIES OF EXTERNAL MODEL\r" +
+	"        // SEARCH FOR FOREIGN IDS ON JOIN TABLE\r" +
+	"        // GET PRIMARY COLLECTION IDS FROM JOIN TABLE\r" +
+	"        var output = [];\r" +
+	"\r" +
+	"        // RETURNED FROM INITIAL RELATED DATA QUERY\r" +
+	"        // THEN RESET AND RETURNED FROM JOIN TABLE\r" +
+	"        var foreignIdArray = []; \r" +
+	"        \r" +
+	"        // RETURNED FROM JOIN TABLE\r" +
+	"        var primaryIdArray = [];\r" +
+	"\r" +
+	"        // JOIN TABLE CONFIG\r" +
+	"        var foreignTableName = searchConfig.collection;\r" +
+	"        var joinTableForeignField = searchConfig.via + '_' + searchConfig.via;\r" +
+	"        var joinTableModelField = config.modelName + '_' + config.searchField;\r" +
+	"        var joinTableName = joinTableModelField.toLowerCase() + '__' + joinTableForeignField;\r" +
+	"\r" +
+	"        var whereQuery = {};\r" +
+	"        whereQuery[searchConfig.via] = { contains: config.criteria };\r" +
+	"        \r" +
+	"        // GET MATCHING RELATED DATA AND IDs\r" +
+	"        // GET FOREIGN DATA USING \r" +
+	"        // config.criteria\r" +
+	"        var output = sails.models[foreignTableName].find()\r" +
+	"            .where(whereQuery)\r" +
+	"            .then(function(relatedDocs){\r" +
+	"                for (var i = relatedDocs.length - 1; i >= 0; i--) {\r" +
+	"                    foreignIdArray.push(relatedDocs[i].id);\r" +
+	"                };\r" +
+	"                //no relatedDocs found\r" +
+	"                if(relatedDocs === undefined) {\r" +
+	"                    return res.json({notFound:true});\r" +
+	"                }\r" +
+	"        // GET JOIN TABLE DATA\r" +
+	"        // with primary record\r" +
+	"        // using foreignArray ids\r" +
+	"        var foreignWhereQuery = {};\r" +
+	"            foreignWhereQuery[joinTableForeignField] = foreignIdArray;\r" +
+	"            return sails.models[joinTableName].find()\r" +
+	"                .where(foreignWhereQuery)\r" +
+	"                .then(function(joinData){\r" +
+	"                for (var i = joinData.length - 1; i >= 0; i--) {\r" +
+	"                    primaryIdArray.push(joinData[i][joinTableModelField]);\r" +
+	"                };    \r" +
+	"                // GET PRIMARY DATA using primaryIdArray\r" +
+	"                    var whereQuery = {id:{'$in':primaryIdArray}};\r" +
+	"                    return sails.models[config.modelName].find()\r" +
+	"                    .where(whereQuery)\r" +
+	"                    .populateAll()\r" +
+	"                    .then(function(found){\r" +
+	"                        res.json(found);\r" +
+	"                    });\r" +
+	"                });\r" +
+	"            });\r" +
+	"    },\r" +
+	"\r" +
+	"    model: function(req, res) {\r" +
+	"        // MODEL REFERENCE\r" +
+	"        var config = setConfig(req);\r" +
+	"        // Display config here / may be moved\r" +
+	"        // Used in dynamic views to set up rich text editor\r" +
+	"        config.model._textAreas = ['intro', 'text', 'caption'];\r" +
+	"        return res.json(config.model);\r" +
+	"    },\r" +
+	"\r" +
+	"    displayOrder: function(req, res) {\r" +
+	"        var config = setConfig(req);\r" +
+	"        var array = [];\r" +
+	"        for (var prop in config.model) {\r" +
+	"            array.push(prop);\r" +
+	"        }\r" +
+	"        return res.json(array);\r" +
+	"    },\r" +
+	"\r" +
+	"    getCount: function(req, res) {\r" +
+	"        var config = setConfig(req);\r" +
+	"        sails.models[config.modelName].count(config.query).exec(function countCB(err, found){\r" +
+	"            return res.json(found);\r" +
+	"        });\r" +
+	"    }\r" +
+	"};\r" +
+	"\r" +
+	"/*\r" +
+	"function searchPrimary(model, whereQuery) {\r" +
+	"    // GET PRIMARY DATA using primaryIdArray\r" +
+	"    return sails.models[model].find()\r" +
+	"        .where(whereQuery)\r" +
+	"        .populateAll()\r" +
+	"        .then(function(found){\r" +
+	"            console.log(found);\r" +
+	"            return found;\r" +
+	"        });    \r" +
+	"}\r" +
+	"\r" +
+	"var createIdArray = function (docs) {\r" +
+	"    var idArray;\r" +
+	"    for (var i = docs.length - 1; i >= 0; i--) {\r" +
+	"        idArray.push(docs[i].id);\r" +
+	"    };\r" +
+	"    //no relatedDocs found\r" +
+	"    if(relatedDocs === undefined) {\r" +
+	"        return res.json({notFound:true});\r" +
+	"    }\r" +
+	"    return idArray;\r" +
+	"}\r" +
+	"*/";
 }
